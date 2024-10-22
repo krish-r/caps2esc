@@ -1,0 +1,15 @@
+.{
+    .name = "caps2esc",
+    .version = "0.0.0",
+    //.minimum_zig_version = "0.14.0",
+
+    .dependencies = .{},
+
+    .paths = .{
+        "LICENSE",
+        "README.md",
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
