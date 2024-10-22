@@ -1,0 +1,7 @@
+[Service]
+WorkingDirectory=/
+ExecStart=bash -c '/home/user/example-path/caps2esc/zig-out/bin/caps2esc --device "example-device-name"'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -33,6 +33,17 @@ sudo zig-out/bin/caps2esc --device 'device-name'
 zig build -Doptimize=ReleaseSafe
 ```
 
+## Adding service to `systemd`
+
+**Note**: Update the path and device name in the example service file (`caps2esc.service`) and the below command.
+
+```shell
+sudo cp ~/example-path/caps2esc/caps2esc.service /usr/lib/systemd/system/
+sudo systemctl enable caps2esc.service
+sudo systemctl start caps2esc.service
+systemctl status caps2esc.service
+```
+
 ## Credits
 
 -   [evremap][evremap] by [@wez][wez]
