@@ -1,0 +1,34 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: master
+
+      - name: Setup libevdev
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config libevdev-dev
+
+      - name: Build
+        run: zig build -Doptimize=ReleaseSafe
+
+      - name: Archive executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: caps2esc
+          path: zig-out/bin/*
