@@ -1,7 +1,8 @@
 .{
-    .name = "caps2esc",
-    .version = "0.1.0",
-    //.minimum_zig_version = "0.14.0",
+    .name = .caps2esc,
+    .version = "0.2.0",
+    .fingerprint = 0x67408b887a8a9725,
+    .minimum_zig_version = "0.14.0",
 
     .dependencies = .{},
 
