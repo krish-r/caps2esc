@@ -3,6 +3,7 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const dep_optimize = b.option(std.builtin.OptimizeMode, "dep-optimize", "optimization mode") orelse .ReleaseFast;
 
     const exe = b.addExecutable(.{
         .name = "caps2esc",
@@ -12,8 +13,12 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    exe.linkSystemLibrary("libevdev");
-    exe.linkLibC();
+
+    const libevdev = b.dependency("libevdev", .{
+        .target = target,
+        .optimize = dep_optimize,
+    });
+    exe.linkLibrary(libevdev.artifact("evdev"));
 
     b.installArtifact(exe);
 

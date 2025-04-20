@@ -4,7 +4,12 @@
     .fingerprint = 0x67408b887a8a9725,
     .minimum_zig_version = "0.14.0",
 
-    .dependencies = .{},
+    .dependencies = .{
+        .libevdev = .{
+            .url = "git+https://github.com/krish-r/libevdev.git#d3333be926d1a50a15db5490ff3528e0481e5be3",
+            .hash = "libevdev-1.13.4-1GMzWCsVAACIAvv6aHhCAaXb90bOa9huACvCft_xhODN",
+        },
+    },
 
     .paths = .{
         "LICENSE",

@@ -1,7 +1,7 @@
 const std = @import("std");
 const c = @cImport({
-    @cInclude("libevdev-1.0/libevdev/libevdev.h");
-    @cInclude("libevdev-1.0/libevdev/libevdev-uinput.h");
+    @cInclude("libevdev/libevdev.h");
+    @cInclude("libevdev/libevdev-uinput.h");
 });
 
 const Allocator = std.mem.Allocator;
