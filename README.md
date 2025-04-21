@@ -26,7 +26,6 @@ sudo zig-out/bin/caps2esc --device 'device-name'
 
 ### Dependencies
 
--   `libevdev` development package (Fedora: `sudo dnf install libevdev-devel` | Debian/Ubuntu: `sudo apt install libevdev-dev`)
 -   [Zig master](https://ziglang.org/download/)
 
 ```shell
