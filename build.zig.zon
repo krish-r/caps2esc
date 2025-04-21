@@ -6,8 +6,8 @@
 
     .dependencies = .{
         .libevdev = .{
-            .url = "git+https://github.com/krish-r/libevdev.git#d3333be926d1a50a15db5490ff3528e0481e5be3",
-            .hash = "libevdev-1.13.4-1GMzWCsVAACIAvv6aHhCAaXb90bOa9huACvCft_xhODN",
+            .url = "git+https://github.com/krish-r/libevdev.git#fe8c7599157e6c2530b60d32a1756549af502d53",
+            .hash = "libevdev-1.13.4-1GMzWDoVAACY0KnBg0om3py3yrHUph6xZam0oQIhIkDa",
         },
     },
 
