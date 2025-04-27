@@ -5,7 +5,7 @@ const c = @cImport({
 });
 
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.ArrayListUnmanaged;
 
 const usage_text =
     \\Usage: caps2esc [options]
@@ -20,7 +20,7 @@ const usage_text =
 ;
 
 pub fn main() !void {
-    var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    var arena_instance: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     defer arena_instance.deinit();
     const arena = arena_instance.allocator();
 
@@ -69,10 +69,10 @@ fn remap(allocator: Allocator, device_name: []const u8) !void {
     if (c.libevdev_uinput_create_from_device(dev, c.LIBEVDEV_UINPUT_OPEN_MANAGED, &uinput_dev) != 0) return error.UinputDeviceCreationFailed;
     defer c.libevdev_uinput_destroy(uinput_dev);
 
-    // Docs: https://www.freedesktop.org/software/libevdev/doc/latest/group__init.html#ga5d434af74fee20f273db568e2cbbd13f
-    // Grab or ungrab the device through a kernel EVIOCGRAB.
+    // From libevdev docs: https://www.freedesktop.org/software/libevdev/doc/latest/group__init.html#ga5d434af74fee20f273db568e2cbbd13f
+    // "Grab or ungrab the device through a kernel EVIOCGRAB.
     // This prevents other clients (including kernel-internal ones such as rfkill) from receiving events from this device.
-    // This is generally a bad idea. Don't do this.
+    // This is generally a bad idea. Don't do this."
     if (c.libevdev_grab(dev, c.LIBEVDEV_GRAB) != 0) return error.DeviceGrabbingFailed;
 
     while (true) {
@@ -92,7 +92,7 @@ fn remap(allocator: Allocator, device_name: []const u8) !void {
 
 /// Get device info by its name.
 fn getDeviceByName(allocator: Allocator, device_name: []const u8) !?DeviceInfo {
-    var device_list = ArrayList(DeviceInfo).init(allocator);
+    var device_list: ArrayList(DeviceInfo) = .empty;
     try getDevices(allocator, &device_list);
 
     for (device_list.items) |device| {
@@ -104,7 +104,7 @@ fn getDeviceByName(allocator: Allocator, device_name: []const u8) !?DeviceInfo {
 
 /// List all the devices to stdout.
 fn listDevices(allocator: Allocator, stdout: std.fs.File) !void {
-    var device_list = ArrayList(DeviceInfo).init(allocator);
+    var device_list: ArrayList(DeviceInfo) = .empty;
     try getDevices(allocator, &device_list);
 
     for (device_list.items) |device| {
@@ -129,7 +129,7 @@ fn getDevices(allocator: Allocator, device_list: *ArrayList(DeviceInfo)) !void {
 
         const filename = try std.fs.path.join(allocator, &.{ device_dir, it.name });
         const device = try DeviceInfo.fromFile(allocator, filename);
-        try device_list.append(device);
+        try device_list.append(allocator, device);
     }
 }
 
