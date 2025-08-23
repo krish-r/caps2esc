@@ -24,12 +24,15 @@ pub fn main() !void {
     defer arena_instance.deinit();
     const arena = arena_instance.allocator();
 
-    const stdout = std.io.getStdOut();
+    var stdout_buf: [1024]u8 = undefined;
+    var stdout_writer = std.fs.File.stdout().writer(&stdout_buf);
+    const stdout = &stdout_writer.interface;
 
     // parse args - just once
     const args = try std.process.argsAlloc(arena);
     if (args.len <= 1) {
         try stdout.writeAll(usage_text);
+        try stdout.flush();
         return std.process.cleanExit();
     }
     if (std.mem.eql(u8, args[1], "-h") or std.mem.eql(u8, args[1], "--help")) {
@@ -47,6 +50,8 @@ pub fn main() !void {
         std.debug.print("{s}", .{usage_text});
         std.process.exit(1);
     }
+
+    try stdout.flush();
 }
 
 fn remap(allocator: Allocator, device_name: []const u8) !void {
@@ -103,12 +108,12 @@ fn getDeviceByName(allocator: Allocator, device_name: []const u8) !?DeviceInfo {
 }
 
 /// List all the devices to stdout.
-fn listDevices(allocator: Allocator, stdout: std.fs.File) !void {
+fn listDevices(allocator: Allocator, stdout: *std.Io.Writer) !void {
     var device_list: ArrayList(DeviceInfo) = .empty;
     try getDevices(allocator, &device_list);
 
     for (device_list.items) |device| {
-        try stdout.writer().print("name: {s}\npath: {s}\n\n", .{
+        try stdout.print("name: {s}\npath: {s}\n\n", .{
             device.name,
             device.path,
         });
