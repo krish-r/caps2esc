@@ -67,7 +67,7 @@ fn remap(allocator: Allocator, device_name: []const u8) !void {
     if (c.libevdev_new_from_fd(file.handle, &dev) != 0) return error.DeviceCreationFailed;
     defer c.libevdev_free(dev);
 
-    c.libevdev_set_name(dev, @ptrCast(try std.fmt.allocPrint(allocator, "caps2esc virtual input for '{s}'", .{device.path})));
+    c.libevdev_set_name(dev, @ptrCast(try std.fmt.allocPrintSentinel(allocator, "caps2esc virtual input for '{s}'", .{device.path}, '\x00')));
     // if (c.libevdev_enable_event_code(dev, c.EV_KEY, c.KEY_ESC, null) != 0) return error.EventCodeEnablingFailed;
 
     var uinput_dev: ?*c.struct_libevdev_uinput = null;
