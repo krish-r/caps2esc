@@ -5,7 +5,7 @@ const c = @cImport({
 });
 
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayListUnmanaged;
+const ArrayList = std.ArrayList;
 
 const usage_text =
     \\Usage: caps2esc [options]
