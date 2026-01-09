@@ -5,6 +5,7 @@ const c = @cImport({
 });
 
 const Allocator = std.mem.Allocator;
+const Io = std.Io;
 const ArrayList = std.ArrayList;
 
 const usage_text =
@@ -19,32 +20,31 @@ const usage_text =
     \\
 ;
 
-pub fn main() !void {
-    var arena_instance: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
-    defer arena_instance.deinit();
-    const arena = arena_instance.allocator();
+pub fn main(init: std.process.Init) !void {
+    const arena = init.arena.allocator();
+    const io = init.io;
 
     var stdout_buf: [1024]u8 = undefined;
-    var stdout_writer = std.fs.File.stdout().writer(&stdout_buf);
+    var stdout_writer = Io.File.stdout().writer(io, &stdout_buf);
     const stdout = &stdout_writer.interface;
 
     // parse args - just once
-    const args = try std.process.argsAlloc(arena);
+    const args = try init.minimal.args.toSlice(arena);
     if (args.len <= 1) {
         try stdout.writeAll(usage_text);
         try stdout.flush();
-        return std.process.cleanExit();
+        return std.process.cleanExit(io);
     }
     if (std.mem.eql(u8, args[1], "-h") or std.mem.eql(u8, args[1], "--help")) {
         try stdout.writeAll(usage_text);
     } else if (std.mem.eql(u8, args[1], "-l") or std.mem.eql(u8, args[1], "--list-devices")) {
-        try listDevices(arena, stdout);
+        try listDevices(arena, io, stdout);
     } else if (std.mem.eql(u8, args[1], "-d") or std.mem.eql(u8, args[1], "--device")) {
         if (args.len <= 2) {
             std.debug.print("'{s}' requires a device name\n", .{args[1]});
             std.process.exit(1);
         }
-        try remap(arena, args[2]);
+        try remap(arena, io, args[2]);
     } else {
         std.debug.print("unrecognized argument: '{s}'\n\n", .{args[1]});
         std.debug.print("{s}", .{usage_text});
@@ -54,14 +54,14 @@ pub fn main() !void {
     try stdout.flush();
 }
 
-fn remap(allocator: Allocator, device_name: []const u8) !void {
-    const device = (try getDeviceByName(allocator, device_name)) orelse {
+fn remap(allocator: Allocator, io: Io, device_name: []const u8) !void {
+    const device = (try getDeviceByName(allocator, io, device_name)) orelse {
         std.debug.print("Unable to find device with name: '{s}'!\n", .{device_name});
         std.process.exit(1);
     };
 
-    const file = try std.fs.openFileAbsolute(device.path, .{});
-    defer file.close();
+    const file = try std.Io.Dir.openFileAbsolute(io, device.path, .{});
+    defer file.close(io);
 
     var dev: ?*c.struct_libevdev = null;
     if (c.libevdev_new_from_fd(file.handle, &dev) != 0) return error.DeviceCreationFailed;
@@ -96,9 +96,9 @@ fn remap(allocator: Allocator, device_name: []const u8) !void {
 }
 
 /// Get device info by its name.
-fn getDeviceByName(allocator: Allocator, device_name: []const u8) !?DeviceInfo {
+fn getDeviceByName(allocator: Allocator, io: Io, device_name: []const u8) !?DeviceInfo {
     var device_list: ArrayList(DeviceInfo) = .empty;
-    try getDevices(allocator, &device_list);
+    try getDevices(allocator, io, &device_list);
 
     for (device_list.items) |device| {
         if (std.mem.eql(u8, device_name, device.name)) return device;
@@ -108,9 +108,9 @@ fn getDeviceByName(allocator: Allocator, device_name: []const u8) !?DeviceInfo {
 }
 
 /// List all the devices to stdout.
-fn listDevices(allocator: Allocator, stdout: *std.Io.Writer) !void {
+fn listDevices(allocator: Allocator, io: Io, stdout: *Io.Writer) !void {
     var device_list: ArrayList(DeviceInfo) = .empty;
-    try getDevices(allocator, &device_list);
+    try getDevices(allocator, io, &device_list);
 
     for (device_list.items) |device| {
         try stdout.print("name: {s}\npath: {s}\n\n", .{
@@ -121,19 +121,19 @@ fn listDevices(allocator: Allocator, stdout: *std.Io.Writer) !void {
 }
 
 /// Get all Device details from `/dev/input/`.
-fn getDevices(allocator: Allocator, device_list: *ArrayList(DeviceInfo)) !void {
+fn getDevices(allocator: Allocator, io: Io, device_list: *ArrayList(DeviceInfo)) !void {
     const device_dir = "/dev/input/";
 
-    var devices = try std.fs.openDirAbsolute(device_dir, .{ .iterate = true });
-    defer devices.close();
+    var devices = try Io.Dir.openDirAbsolute(io, device_dir, .{ .iterate = true });
+    defer devices.close(io);
     var device_it = devices.iterate();
 
-    while (try device_it.next()) |it| {
+    while (try device_it.next(io)) |it| {
         if (it.kind == .directory) continue;
         if (!std.mem.startsWith(u8, it.name, "event")) continue;
 
         const filename = try std.fs.path.join(allocator, &.{ device_dir, it.name });
-        const device = try DeviceInfo.fromFile(allocator, filename);
+        const device = try DeviceInfo.fromFile(allocator, io, filename);
         try device_list.append(allocator, device);
     }
 }
@@ -143,9 +143,9 @@ const DeviceInfo = struct {
     path: []const u8,
 
     /// Get Device Info from the given file.
-    fn fromFile(allocator: Allocator, filename: []const u8) !DeviceInfo {
-        const file = try std.fs.openFileAbsolute(filename, .{});
-        defer file.close();
+    fn fromFile(allocator: Allocator, io: Io, filename: []const u8) !DeviceInfo {
+        const file = try std.Io.Dir.openFileAbsolute(io, filename, .{});
+        defer file.close(io);
 
         var dev: ?*c.struct_libevdev = null;
         if (c.libevdev_new_from_fd(file.handle, &dev) != 0) return error.DeviceCreationFailed;

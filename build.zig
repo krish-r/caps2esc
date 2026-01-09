@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = dep_optimize,
     });
-    exe.linkLibrary(libevdev.artifact("evdev"));
+    exe.root_module.linkLibrary(libevdev.artifact("evdev"));
 
     b.installArtifact(exe);
 
