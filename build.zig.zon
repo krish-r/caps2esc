@@ -1,13 +1,13 @@
 .{
     .name = .caps2esc,
-    .version = "0.3.1",
+    .version = "0.4.0",
     .fingerprint = 0x67408b887a8a9725,
-    .minimum_zig_version = "0.16.0-dev.2075+62d6bbc7d",
+    .minimum_zig_version = "0.16.0-dev.2637+6a9510c0e",
 
     .dependencies = .{
         .libevdev = .{
-            .url = "git+https://github.com/krish-r/libevdev.git#f952ecc963268ca704ea894b678eb88d30510162",
-            .hash = "libevdev-1.13.5-1GMzWKgVAAD0F7D3xtEBxwFIYcbhEsqX70GLCGzX92hf",
+            .url = "git+https://github.com/krish-r/libevdev.git#514b69a53a82252445e96cff51851a08227ab90d",
+            .hash = "libevdev-1.13.6-1GMzWKgVAABiPia8HfYnydxmOM5eApI0MOnfWesOb3od",
         },
     },
 
