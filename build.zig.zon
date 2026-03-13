@@ -1,8 +1,8 @@
 .{
     .name = .caps2esc,
-    .version = "0.4.0",
+    .version = "0.5.0",
     .fingerprint = 0x67408b887a8a9725,
-    .minimum_zig_version = "0.16.0-dev.2637+6a9510c0e",
+    .minimum_zig_version = "0.16.0-dev.2905+5d71e3051",
 
     .dependencies = .{
         .libevdev = .{

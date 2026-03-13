@@ -1,8 +1,5 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("libevdev/libevdev.h");
-    @cInclude("libevdev/libevdev-uinput.h");
-});
+const c = @import("c");
 
 const Allocator = std.mem.Allocator;
 const Io = std.Io;
